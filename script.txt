@@ -1,0 +1,7 @@
+create database projeto2;
+
+use projeto2;
+
+CREATE TABLE Notas(id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, data DATETIME, conteudo VARCHAR(255), pessoa_id INT(11) NOT NULL);
+
+CREATE TABLE pessoa(id INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT, login VARCHAR(255) NOT NULL, senha VARCHAR(255) NOT NULL);
