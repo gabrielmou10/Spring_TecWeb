@@ -1,9 +1,15 @@
 package mvc.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.servlet.http.HttpSession;
 
@@ -13,6 +19,11 @@ import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import mvc.model.NotasDAO;
 import mvc.model.Notas;
@@ -31,6 +42,8 @@ public class NotasController {
 		//List<Notas> listaNotas = dao.getListaNotas(id_usuario); 
 	 
 		model.addAttribute("notas", notas);
+		String teste = api("funny");
+		model.addAttribute("gif_url", teste);
 		return "index";
 	}
  
@@ -44,9 +57,9 @@ public class NotasController {
 	}
 */
 
-	@RequestMapping("/adicionaNota")
+	@RequestMapping("adicionaNota")
 	public String adicionar(HttpSession session, 
-			//@RequestParam(value = "titulo") String titulo,          <input type="text" class="form-control" id="title_id" name="titulo" required >
+
 			@RequestParam(value = "conteudo") String texto_nota) throws SQLException, IOException{ //
 	
 		NotasDAO dao = new NotasDAO();
@@ -68,7 +81,7 @@ public class NotasController {
 		return "redirect:inicio";
 	}
  
-	@RequestMapping("/removeNota")
+	@RequestMapping("removeNota")
 	public String remover(HttpSession session,
 			@RequestParam(value = "id") Integer id_nota) throws SQLException {
 		
@@ -81,7 +94,7 @@ public class NotasController {
 		return "redirect:inicio";
 	}
 	
-	@RequestMapping("/editaNota")
+	@RequestMapping("editaNota")
 	public String editar(HttpSession session,
 			@RequestParam(value = "id") Integer id_nota,
 			@RequestParam(value = "conteudo") String texto_nota) throws SQLException, IOException {
@@ -103,7 +116,8 @@ public class NotasController {
 	}
 	
 	@RequestMapping("paginaAdicionarNota") //ir para a pagina de nova nota
-	public String pagina_nova(HttpSession session){
+	public String pagina_nova(HttpSession session) throws Exception{
+		
 		return "crianotas";
 	}
 	
@@ -121,6 +135,52 @@ public class NotasController {
 		
 		return "atualizanotas";
 	}
+	
+	public String api(String palavra) throws IOException{
+		
+		String key = "SnHvNXR8QqeokFX97fU7VRdyqFhgJzpL";
+		String  tag = palavra;
+		
+		String site = "https://api.giphy.com/v1/gifs/random?api_key="+key+"&tag="+tag+"&rating=R";
+		
+		site = site.replace(" ","%20");
+		
+		URL url = new URL(site);
+		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
+		conexao.setRequestMethod("GET");
+		conexao.connect();
+		
+		int resposta = conexao.getResponseCode(); 
+		String inline = "";
+		System.out.println("resposta");
+		System.out.println(resposta);
+		if(resposta != 200)
+			throw new RuntimeException("HttpResponseCode: " +resposta);
+			else
+			{
+
+				
+						
+						
+				Scanner sc = new Scanner(url.openStream());
+				while(sc.hasNext())
+				{
+				inline+=sc.nextLine();
+				//System.out.println("inilin");
+				//System.out.println(inline);
+				}
+
+				sc.close();
+				System.out.println("JSON data in string format");
+				System.out.println(inline);
+				
+				JsonElement root = new JsonParser().parse(inline);
+				String gif = root.getAsJsonObject().get("data").getAsJsonObject().get("images").getAsJsonObject().get("fixed_height").getAsJsonObject().get("url").getAsString();
+				System.out.println(gif);
+				
+				return gif;
+			}
+}
 	
 	
 }

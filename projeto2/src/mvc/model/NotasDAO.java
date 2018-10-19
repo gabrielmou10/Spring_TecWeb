@@ -197,20 +197,7 @@ public class NotasDAO {
 		}
 	}
 	
-/*	
-	public void removeNota(Integer id) {
-		PreparedStatement stmt;
-		try {
-			stmt = connection.prepareStatement("DELETE FROM Notas WHERE id=? OR ");
-			stmt.setLong(1, id);
-			stmt.execute();
-			stmt.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-*/
+
 	
 	public void removeNota(Integer id, Integer pessoa_id) throws SQLException {
 		PreparedStatement stmt = connection.prepareStatement("DELETE FROM Notas WHERE id=? AND pessoa_id=?");

@@ -17,7 +17,8 @@
 
 
 
-<%List<Notas> listaNotas = (ArrayList<Notas>) request.getAttribute("notas");%>
+<%List<Notas> listaNotas = (ArrayList<Notas>) request.getAttribute("notas");
+String gif_url = (String) request.getAttribute("gif_url");%>
 
 </head>
 <body>
@@ -54,7 +55,8 @@ System.out.println("nota");%>
   </div>
 <% } %>
 </div>
-
+<h3 id="gif" class="center">Gif do dia:</h3>
+<img src="<%=gif_url%>" alt="Erro de carregamento" class="center" style="float:center;"/>
 
 
 <div class= "button-flex">
