@@ -1,14 +1,10 @@
 package mvc.controller;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Scanner;
 
 import javax.servlet.http.HttpSession;
@@ -20,10 +16,8 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
 import mvc.model.NotasDAO;
 import mvc.model.Notas;
@@ -38,12 +32,13 @@ public class NotasController {
 		NotasDAO dao = new NotasDAO();
 	 
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
+		String gif_url = (String) session.getAttribute("palavra_gif");
+		
 		ArrayList<Notas>  notas =  (ArrayList<Notas>) dao.getListaNotas(id_usuario);
 		//List<Notas> listaNotas = dao.getListaNotas(id_usuario); 
 	 
 		model.addAttribute("notas", notas);
-		String teste = api("funny");
-		model.addAttribute("gif_url", teste);
+		model.addAttribute("gif_url", gif_url);
 		return "index";
 	}
  
@@ -136,9 +131,18 @@ public class NotasController {
 		return "atualizanotas";
 	}
 	
-	public String api(String palavra) throws IOException{
+	@RequestMapping("buscaGif") //buscar gif
+	public String gif(HttpSession session,
+			@RequestParam(value = "palavra_gif") String gif) throws Exception{
+		api(gif, session);
 		
-		String key = "SnHvNXR8QqeokFX97fU7VRdyqFhgJzpL";
+		
+		return "redirect:inicio";
+	}
+	
+	public String api(String palavra, HttpSession session) throws IOException{
+		
+		String key = "";
 		String  tag = palavra;
 		
 		String site = "https://api.giphy.com/v1/gifs/random?api_key="+key+"&tag="+tag+"&rating=R";
@@ -178,6 +182,7 @@ public class NotasController {
 				String gif = root.getAsJsonObject().get("data").getAsJsonObject().get("images").getAsJsonObject().get("fixed_height").getAsJsonObject().get("url").getAsString();
 				System.out.println(gif);
 				
+				session.setAttribute("palavra_gif", gif);
 				return gif;
 			}
 }

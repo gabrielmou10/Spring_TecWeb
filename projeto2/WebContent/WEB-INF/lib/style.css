@@ -33,6 +33,14 @@ body {
 	margin: 10px;
 }
 
+.search {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	height: 10%;
+	margin: 0px;
+}
+
 #data {
 	font-family: arial, sans-serif;
 	font-size: 40%;

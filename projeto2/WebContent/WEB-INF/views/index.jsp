@@ -55,8 +55,7 @@ System.out.println("nota");%>
   </div>
 <% } %>
 </div>
-<h3 id="gif" class="center">Gif do dia:</h3>
-<img src="<%=gif_url%>" alt="Erro de carregamento" class="center" style="float:center;"/>
+
 
 
 <div class= "button-flex">
@@ -74,6 +73,22 @@ System.out.println("nota");%>
 		<input id="home" class="button" type ="submit" value="Sair">
 	</form></div>
 	
+	
+	
+		</div>
+	
+<br><hr><br><br>
+<div class= "search">
+<div class="form">
+	<form class="login-form" action = "buscaGif">
+		<input type = "text" name="palavra_gif">
+		<input id="home" class="button" type = "submit" value="Buscar Giphy">
+	</form></div></div>
+	<img src="<%=gif_url%>" class="center" style="float:center;"/>
+	
+	
+	
+	
 	<%--
 	<div>
 	<form action="OrdenaNotas">
@@ -81,7 +96,7 @@ System.out.println("nota");%>
 		<input id="home" class="button" type = "submit" value="Ordenar: Atualização">
 	</form></div>  --%>
 
-	</div>
+
 
 </body>
 </html>
