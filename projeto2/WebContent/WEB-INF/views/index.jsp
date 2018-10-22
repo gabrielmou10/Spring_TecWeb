@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <style type="text/css">  <%@include file="/WEB-INF/lib/form_style.css" %>
@@ -19,7 +19,7 @@
 
 <%List<Notas> listaNotas = (ArrayList<Notas>) request.getAttribute("notas");
 String gif_url = (String) request.getAttribute("gif_url");%>
-
+<title>In√≠cio</title>
 </head>
 <body>
 
@@ -40,17 +40,27 @@ System.out.println("nota");%>
   	<p id="texto_nota"><%=nota.getConteudo()%></p>
   	<h6 id="data"> Criado em <%=nota.getDateTime()%></h6>
   	<div class="button-flex">
+  	
   	<div>
 	<form action = "removeNota" method = "post">
 		<input type='hidden' name='id' value="<%= nota.getId()%>">
 		<input id="apagar" class="button" type ="submit" value = "Apagar">
 	</form></div>
+	
 	<div>
 	<form action = "paginaEditaNota">
 		<input type='hidden' name='id' value="<%= nota.getId()%>">
-		<input type='hidden' name='conteudo' value="<%= nota.getConteudo()%>">
+		<input type='hidden' name='tipo' value=0>
 		<input id="editar" class="button" type = "submit" value = "Editar">
 	</form></div>
+	
+	<div>
+	<form action = "paginaEditaNota">
+		<input type='hidden' name='id' value="<%= nota.getId()%>">
+		<input type='hidden' name='tipo' value=1>
+		<input id="editar" class="button" type = "submit" value = "Traduzir">
+	</form></div>
+	
 	</div>
   </div>
 <% } %>
@@ -84,7 +94,10 @@ System.out.println("nota");%>
 		<input type = "text" name="palavra_gif">
 		<input id="home" class="button" type = "submit" value="Buscar Giphy">
 	</form></div></div>
-	<img src="<%=gif_url%>" class="center" style="float:center;"/>
+	<object class="center" data="<%=gif_url%>" type="image/gif"></object>
+	
+	
+
 	
 	
 	
@@ -93,7 +106,7 @@ System.out.println("nota");%>
 	<div>
 	<form action="OrdenaNotas">
 		<input type="hidden" name='pessoa_id' value=<%=id_usuario %>>
-		<input id="home" class="button" type = "submit" value="Ordenar: AtualizaÁ„o">
+		<input id="home" class="button" type = "submit" value="Ordenar: Atualiza√ß√£o">
 	</form></div>  --%>
 
 

@@ -88,52 +88,12 @@ public class NotasDAO {
 		
 		return notas;
 	}
-	/*
-	public List<Notas> getListaNotasOrdenadas(int id) {
-		
-		List <Notas> notas = new ArrayList<Notas>();
-		
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			stmt = connection.prepareStatement("SELECT * FROM Notas WHERE pessoa_id=? ORDER BY data_atualizada DESC;");
-			stmt.setInt(1, id);
-			rs = stmt.executeQuery();
-			
-			while (rs.next()) {
-				Notas nota = new Notas();				
-				nota.setId(rs.getInt("id"));
-				//nota.setTipo(rs.getString("tipo"));
-				nota.setConteudo(rs.getString("conteudo"));
-				nota.setPessoa_id(rs.getInt("pessoa_id"));				
-				notas.add(nota);
-			}
-		} catch (SQLException e) {
-			System.out.println("asjhias");
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			rs.close();
-			stmt.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-			
-		return notas;
-	}
-	*/
 	
 	public void adicionaNota(Notas nota) {
 		String sql = "INSERT INTO Notas" + "(data, conteudo, pessoa_id) values(?,?,?)";
-		//String sql = "INSERT INTO Notas" + "(data, conteudo, pessoa_id) values(?,?,?,?)";
 		PreparedStatement stmt;
 		try {
 			stmt = connection.prepareStatement(sql);
-			//stmt.setString(1,nota.getTipo());
 			stmt.setString(1, nota.getDateTime());
 			System.out.println(nota.getDateTime());
 			stmt.setString(2,nota.getConteudo());
@@ -164,13 +124,10 @@ public class NotasDAO {
 	
 	public void alteraNota(Notas nota) {
 		String sql = "UPDATE Notas SET " + "conteudo=? WHERE id=?";
-		//String sql = "UPDATE Notas SET " + "tipo=?, conteudo=?, data_atualizada=? WHERE id=?";
 				PreparedStatement stmt;
 		try {
 			stmt = connection.prepareStatement(sql);
-			//stmt.setString(1, nota.getTipo());
 			stmt.setString(1, nota.getConteudo());
-			//stmt.setString(2, nota.getDataAtualizada());
 			stmt.setInt(2, nota.getId());			
 			stmt.execute();
 			stmt.close();

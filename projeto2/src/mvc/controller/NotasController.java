@@ -1,6 +1,8 @@
 package mvc.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
@@ -35,22 +37,12 @@ public class NotasController {
 		String gif_url = (String) session.getAttribute("palavra_gif");
 		
 		ArrayList<Notas>  notas =  (ArrayList<Notas>) dao.getListaNotas(id_usuario);
-		//List<Notas> listaNotas = dao.getListaNotas(id_usuario); 
 	 
 		model.addAttribute("notas", notas);
 		model.addAttribute("gif_url", gif_url);
 		return "index";
 	}
  
- 
- /*
-	@RequestMapping("/adicionaNota")
-	public String adiciona(Notas nota) {
-		NotasDAO dao = new NotasDAO();
-		dao.adicionaNota(nota);
-		return "redirect:inicio";
-	}
-*/
 
 	@RequestMapping("adicionaNota")
 	public String adicionar(HttpSession session, 
@@ -117,37 +109,49 @@ public class NotasController {
 	}
 	
 	@RequestMapping("paginaEditaNota")
-	public String pagina_edita(HttpSession session,
-			@RequestParam(value = "id") Integer id_nota, ModelMap model) throws SQLException{
+	public String pagina_edita(HttpSession session, ModelMap model,
+			@RequestParam(value = "id") Integer id_nota,
+			@RequestParam(value = "tipo") Integer tipo) throws SQLException, IOException{
 		
 		NotasDAO dao = new NotasDAO();
-		//Integer personId = (Integer) session.getAttribute("idLogado");
 		
 		String texto_nota = dao.getNota(id_nota);
 		model.addAttribute("id", id_nota);
-		//model.addAttribute("titulo", nota.getTitle());
-		model.addAttribute("conteudo", texto_nota);
 		
+		if(tipo == 1) {
+			
+			texto_nota = translate(texto_nota);
+			model.addAttribute("titulo", "Traduzir Nota");
+			
+		} else {
+			model.addAttribute("titulo", "Atualizar Nota");
+			
+		}
+		
+		model.addAttribute("conteudo", texto_nota);
 		return "atualizanotas";
 	}
+	
+	
 	
 	@RequestMapping("buscaGif") //buscar gif
 	public String gif(HttpSession session,
 			@RequestParam(value = "palavra_gif") String gif) throws Exception{
 		api(gif, session);
-		
-		
 		return "redirect:inicio";
 	}
 	
+	
+	
+	
 	public String api(String palavra, HttpSession session) throws IOException{
 		
-		String key = "";
+		String key = "SnHvNXR8QqeokFX97fU7VRdyqFhgJzpL";
 		String  tag = palavra;
 		
 		String site = "https://api.giphy.com/v1/gifs/random?api_key="+key+"&tag="+tag+"&rating=R";
 		
-		site = site.replace(" ","%20");
+		site = site.replace(" ","%20");  //botar espacos no formato de url
 		
 		URL url = new URL(site);
 		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
@@ -162,21 +166,15 @@ public class NotasController {
 			throw new RuntimeException("HttpResponseCode: " +resposta);
 			else
 			{
-
-				
-						
-						
+	
 				Scanner sc = new Scanner(url.openStream());
 				while(sc.hasNext())
 				{
 				inline+=sc.nextLine();
-				//System.out.println("inilin");
-				//System.out.println(inline);
 				}
 
 				sc.close();
-				System.out.println("JSON data in string format");
-				System.out.println(inline);
+
 				
 				JsonElement root = new JsonParser().parse(inline);
 				String gif = root.getAsJsonObject().get("data").getAsJsonObject().get("images").getAsJsonObject().get("fixed_height").getAsJsonObject().get("url").getAsString();
@@ -188,4 +186,53 @@ public class NotasController {
 }
 	
 	
+	
+	
+	
+	public String translate(String conteudo) throws IOException{
+		
+		String key = "trnsl.1.1.20181020T202331Z.70073d6cfd12dec1.55ab310566aea1592eca3655c6de29a0fd1642ef";
+		
+		String lingua = "en";  //traduzir para ingles predefinido
+		
+		String  texto = conteudo;
+		
+		String site = "https://translate.yandex.net/api/v1.5/tr.json/translate?key="+key+"&text="+texto+"&lang="+lingua+"&format=plain&options=1";
+		
+		site = site.replace(" ","%20");  //botar espacos no formato de url
+		
+		URL url = new URL(site);
+		
+		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
+		conexao.setRequestMethod("GET");
+		conexao.connect();
+		
+		int resposta = conexao.getResponseCode(); 
+		String inline = "";
+		
+		if(resposta != 200)
+			throw new RuntimeException("HttpResponseCode: " +resposta);
+			else
+			{
+
+				Scanner sc = new Scanner(url.openStream(), "UTF-8");
+
+				
+				while(sc.hasNext())
+				{
+				inline+=sc.nextLine();
+				}
+
+				sc.close();
+
+				
+				
+				JsonElement root = new JsonParser().parse(inline.toString());
+				
+				String traducao = root.getAsJsonObject().get("text").getAsString();
+
+				return traducao;
+				
+			}
 }
+		}
