@@ -31,15 +31,36 @@ public class NotasController {
 	//pagina inicial de notas
 	@RequestMapping(value={"inicio"})
 	public String inicio(HttpSession session, Model model) throws SQLException, IOException, ParseException {
+		
 		NotasDAO dao = new NotasDAO();
 	 
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 		String gif_url = (String) session.getAttribute("palavra_gif");
+		String palavra_chave = (String) session.getAttribute("palavra_chave");
+		String filtro = "Filtrar Notas";
 		
 		ArrayList<Notas>  notas =  (ArrayList<Notas>) dao.getListaNotas(id_usuario);
+		
+		
+		if (palavra_chave != "" && palavra_chave != null) { //filtrar notas por palavra
+			
+			ArrayList<Notas> notas_filtradas = new ArrayList<Notas>();
+		
+			for (Notas nota : notas) {
+				if (nota.getConteudo().contains(palavra_chave)) { 
+					notas_filtradas.add(nota);
+				}
+				}
+			model.addAttribute("notas", notas_filtradas);
+			filtro = "Cancelar Filtro";
+			
+		} else {
+			model.addAttribute("notas", notas);
+			filtro = "Filtrar Notas";
+		}
 	 
-		model.addAttribute("notas", notas);
 		model.addAttribute("gif_url", gif_url);
+		model.addAttribute("filtro", filtro);
 		return "index";
 	}
  
@@ -51,17 +72,13 @@ public class NotasController {
 	
 		NotasDAO dao = new NotasDAO();
 		Notas nota = new Notas();
+		 
 		
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 
 		nota.setPessoa_id(id_usuario);
 	 	nota.setConteudo(texto_nota);
 	 	nota.setDateTime();
-	 	System.out.println("data");
-	 	System.out.println(nota.getDateTime());
-	 	
-	 	
-	 	
 		
 		dao.adicionaNota(nota);
 		dao.close();
@@ -137,14 +154,21 @@ public class NotasController {
 	@RequestMapping("buscaGif") //buscar gif
 	public String gif(HttpSession session,
 			@RequestParam(value = "palavra_gif") String gif) throws Exception{
-		api(gif, session);
+		gif_api(gif, session);
+		return "redirect:inicio";
+	}
+	
+	@RequestMapping("buscaPalavra") //buscar palavra
+	public String palavra(HttpSession session,
+			@RequestParam(value = "palavra_chave") String palavra_chave) throws Exception{
+		session.setAttribute("palavra_chave", palavra_chave);
 		return "redirect:inicio";
 	}
 	
 	
 	
 	
-	public String api(String palavra, HttpSession session) throws IOException{
+	public String gif_api(String palavra, HttpSession session) throws IOException{
 		
 		String key = "SnHvNXR8QqeokFX97fU7VRdyqFhgJzpL";
 		String  tag = palavra;
@@ -160,8 +184,6 @@ public class NotasController {
 		
 		int resposta = conexao.getResponseCode(); 
 		String inline = "";
-		System.out.println("resposta");
-		System.out.println(resposta);
 		if(resposta != 200)
 			throw new RuntimeException("HttpResponseCode: " +resposta);
 			else
@@ -178,7 +200,6 @@ public class NotasController {
 				
 				JsonElement root = new JsonParser().parse(inline);
 				String gif = root.getAsJsonObject().get("data").getAsJsonObject().get("images").getAsJsonObject().get("fixed_height").getAsJsonObject().get("url").getAsString();
-				System.out.println(gif);
 				
 				session.setAttribute("palavra_gif", gif);
 				return gif;
@@ -193,7 +214,7 @@ public class NotasController {
 		
 		String key = "trnsl.1.1.20181020T202331Z.70073d6cfd12dec1.55ab310566aea1592eca3655c6de29a0fd1642ef";
 		
-		String lingua = "en";  //traduzir para ingles predefinido
+		String lingua = "pt-en";  //traduzir para ingles predefinido
 		
 		String  texto = conteudo;
 		
@@ -202,6 +223,8 @@ public class NotasController {
 		site = site.replace(" ","%20");  //botar espacos no formato de url
 		
 		URL url = new URL(site);
+		
+		System.out.println(url);
 		
 		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
 		conexao.setRequestMethod("GET");
@@ -214,20 +237,37 @@ public class NotasController {
 			throw new RuntimeException("HttpResponseCode: " +resposta);
 			else
 			{
-
-				Scanner sc = new Scanner(url.openStream(), "UTF-8");
+/*
+				Scanner sc = new Scanner(url.openStream(), "ISO-8859-1");
 
 				
 				while(sc.hasNext())
 				{
 				inline+=sc.nextLine();
+				System.out.println(inline);
+				
 				}
 
 				sc.close();
 
+				*/
+				BufferedReader in = new BufferedReader(new InputStreamReader(conexao.getInputStream(), "UTF-8"));
+				String inputLine;
+				StringBuffer response = new StringBuffer();
+
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+
+				//print result
+				System.out.println("response");
+				System.out.println(response);
+				System.out.println(response.toString());
 				
+				JsonElement root = new JsonParser().parse(response.toString());
 				
-				JsonElement root = new JsonParser().parse(inline.toString());
+				System.out.println(root);
 				
 				String traducao = root.getAsJsonObject().get("text").getAsString();
 

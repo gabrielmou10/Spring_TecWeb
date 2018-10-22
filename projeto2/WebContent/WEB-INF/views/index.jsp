@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+    pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
 <style type="text/css">  <%@include file="/WEB-INF/lib/form_style.css" %>
@@ -9,7 +9,7 @@
 
 <head>
 
-
+<meta charset="UTF-8">
 
 
 <%@ page import="java.util.*,mvc.model.*" %>
@@ -18,24 +18,22 @@
 
 
 <%List<Notas> listaNotas = (ArrayList<Notas>) request.getAttribute("notas");
-String gif_url = (String) request.getAttribute("gif_url");%>
-<title>InÃ­cio</title>
+String gif_url = (String) request.getAttribute("gif_url");
+String filtro = (String) request.getAttribute("filtro");%>
+<title>Início</title>
 </head>
 <body>
 
-<%-- 
 <div class= "button-flex">
 <div class="form">
-	<form class="login-form" action = "FiltraNotas">
-		<input type = "text" name="palavra_filtrada">
-		<input type = "hidden" value =<%= id_usuario %> name = "pessoa_id">
-		<input id="home" class="button" type = "submit" value="Filtrar notas">
-	</form></div></div>  --%>
+	<form class="login-form" action = "inicio" method = "GET">
+		<input type = "text" name="palavra_chave">
+		<input id="home" class="button" type = "submit" value="<%=filtro%>">
+	</form></div></div>
 	
 <div class="flex-container">
 <% for (Notas nota : listaNotas) { 
-System.out.println(nota.getPessoa_id());
-System.out.println("nota");%>
+System.out.println(nota.getConteudo());%>
   <div class="grid-item">
   	<p id="texto_nota"><%=nota.getConteudo()%></p>
   	<h6 id="data"> Criado em <%=nota.getDateTime()%></h6>
@@ -106,7 +104,7 @@ System.out.println("nota");%>
 	<div>
 	<form action="OrdenaNotas">
 		<input type="hidden" name='pessoa_id' value=<%=id_usuario %>>
-		<input id="home" class="button" type = "submit" value="Ordenar: AtualizaÃ§Ã£o">
+		<input id="home" class="button" type = "submit" value="Ordenar: Atualização">
 	</form></div>  --%>
 
 

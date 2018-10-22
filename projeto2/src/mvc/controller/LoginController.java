@@ -38,7 +38,7 @@ public class LoginController {
 		}
 	}
 	
-	@RequestMapping("registrar")
+	@RequestMapping("registro")
 	public String registrar(
 			@RequestParam(value = "login") String login,
 			@RequestParam(value = "senha") String senha) throws SQLException{

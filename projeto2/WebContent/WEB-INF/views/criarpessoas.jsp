@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
 
 <!DOCTYPE html>
 <html>
@@ -12,9 +12,9 @@
 <body>
 	<div class="login-page">
 		<div class="form">
-			<form class="login-form" action="registrar" method='post'>
+			<form class="login-form" action="registro">
 				<h3>Registrar</h3>
-				<input type='text' name='login' placeholder="usuÃ¡rio"> <input
+				<input type='text' name='login' placeholder="usuário"> <input
 					type="password" name="senha" placeholder="senha" /> <input
 					id="botao" type="submit" value="Registrar">
 			</form>
