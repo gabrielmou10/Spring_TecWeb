@@ -27,21 +27,7 @@ public class Notas {
 			 String dateTime = c.get(Calendar.YEAR) + "-" + c.get(Calendar.MONTH) + "-" + c.get(Calendar.DAY_OF_MONTH) + " " + c.get(Calendar.HOUR_OF_DAY) + ":" + c.get(Calendar.MINUTE) + ":" + c.get(Calendar.SECOND);
 			this.datetime = dateTime;
 		}
-		/*
-		public String getTipo() {
-			return this.tipo;
-		}
 		
-		public void setTipo(String tipo) {
-			this.tipo = tipo;
-		}
-		/*
-
-		
-		public String getDataAtualizada() {
-			return this.data_atualizada;
-		}
-		*/
 		public void setData(String data) {
 			this.datetime = data;
 		}

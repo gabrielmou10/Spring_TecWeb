@@ -1,130 +1,233 @@
 package mvc.model;
-import java.sql.Date;
-import java.sql.*;
-import java.util.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import mvc.model.Notas;
+import mvc.model.Pessoas;
+
 public class DAO {
- private Connection connection = null;
-
-public DAO() {
-	try {
-		Class.forName("com.mysql.cj.jdbc.Driver");
-		connection = DriverManager.getConnection("jdbc:mysql://localhost/projeto2?useTimezone=true&serverTimezone=UTC", "root", "Elikevin1");
-		} 
-	catch (SQLException | ClassNotFoundException e)
-		{e.printStackTrace();}
- 	}
-
-
-public void adicionaDescricao(Notas nota) {
-	try {
-		String sql = "INSERT INTO Notas (conteudo) values(?)";
-		PreparedStatement stmt = connection.prepareStatement(sql);
-		stmt.setString(1,nota.getConteudo());
-		stmt.execute();
-		stmt.close();
-		} 
-	catch (SQLException e) {e.printStackTrace();}
- }
-
-public void adiciona(Notas nota) {
-	try {
-		String sql = "INSERT INTO Notas" + "(conteudo) values(?,?,?)";
-		//String sql = "INSERT INTO Notas" + "(conteudo,finalizado,dataFinalizacao) values(?,?,?)";
-		PreparedStatement stmt = connection.prepareStatement(sql);
-		stmt.setString(1,nota.getConteudo());
-		//stmt.setBoolean(2, nota.isFinalizado());
-		//stmt.setDate(3, new Date(nota.getDataFinalizacao().getTimeInMillis()));
-		stmt.execute();
-		stmt.close();
-		} 
-	catch (SQLException e) {e.printStackTrace();}
+	private Connection connection = null;
+	
+	
+	public DAO() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			connection = DriverManager.getConnection(
+					"jdbc:mysql://localhost/projeto2?useTimezone=true&serverTimezone=UTC", "root", "Elikevin1");
+		} catch (ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-
-public List<Notas> getLista() {
-	List<Notas> notas = new ArrayList<Notas>();
-	try {
-		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Notas");
-		ResultSet rs = stmt.executeQuery();
-		while (rs.next()) {
-			Notas nota = new Notas();
-			nota.setId(rs.getInt("id"));
-			nota.setConteudo(rs.getString("conteudo"));
-
-			//nota.setFinalizado(rs.getBoolean("finalizado"));
-			//Calendar data = Calendar.getInstance();
-			//Date dataFinalizacao = rs.getDate("dataFinalizacao");
-			//if(dataFinalizacao!=null) {
-			//	data.setTime(dataFinalizacao);
-			//	tarefa.setDataFinalizacao(data);
-			//}
-			notas.add(nota);
+	
+	public String getNota(int id) {
+		String conteudo = "erro1";
+		
+		PreparedStatement stmt;
+		ResultSet rs;
+		String sql = "SELECT * FROM Notas WHERE id=?";
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				conteudo = rs.getString("conteudo");
+				return (rs.getString("conteudo"));
+			}else {
+				return "erro";
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		rs.close();
-		stmt.close();
-		} 
-	catch(SQLException e) {System.out.println(e);}
-	return notas;
- }
+		return conteudo;	
+	}
+	
+	public List<Notas> getListaNotas(int id) {
+		
+		List<Notas> notas = new ArrayList<Notas>();
+		
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			stmt = connection.prepareStatement("SELECT * FROM Notas WHERE pessoa_id=?;");
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
+			
+			while (rs.next()) {
+				Notas nota = new Notas();				
+				nota.setId(rs.getInt("id"));
+				nota.setData(rs.getString("data"));
+				//nota.setTipo(rs.getString("tipo"));
+				nota.setConteudo(rs.getString("conteudo"));
+				nota.setPessoa_id(rs.getInt("pessoa_id"));				
+				notas.add(nota);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			rs.close();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		return notas;
+	}
+	
+	public void adicionaNota(Notas nota) {
+		String sql = "INSERT INTO Notas" + "(data, conteudo, pessoa_id) values(?,?,?)";
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setString(1, nota.getDateTime());
+			stmt.setString(2,nota.getConteudo());
+			stmt.setInt(3, nota.getPessoa_id());
+			stmt.execute();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void adicionaPessoa(Pessoas pessoa) {
+		String sql = "INSERT INTO Pessoa" + "(login, senha) values(?,?)";
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setString(1,pessoa.getLogin());
+			stmt.setString(2, pessoa.getSenha());
+			stmt.execute();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void alteraNota(Notas nota) {
+		String sql = "UPDATE Notas SET " + "conteudo=? WHERE id=?";
+				PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setString(1, nota.getConteudo());
+			stmt.setInt(2, nota.getId());			
+			stmt.execute();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void alteraPessoa(Pessoas pessoa) {
+		String sql = "UPDATE Pessoa SET " +
+		 "login=?, senha=? WHERE id=?";
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setString(1, pessoa.getLogin());
+			stmt.setString(2, pessoa.getSenha());
+			stmt.setInt(3, pessoa.getId());
+			stmt.execute();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 
-public void remove(Notas nota) {
-	try {
-		PreparedStatement stmt = connection.prepareStatement("DELETE FROM Notas WHERE id=?");
-		stmt.setLong(1, nota.getId());
+	
+	public void removeNota(Integer id, Integer pessoa_id) throws SQLException {
+		PreparedStatement stmt = connection.prepareStatement("DELETE FROM Notas WHERE id=? AND pessoa_id=?");
+		stmt.setLong(1, id);
+		stmt.setLong(2, pessoa_id);
 		stmt.execute();
 		stmt.close();
-	} 
-	catch(SQLException e) {System.out.println(e);}
- }
-
-public Notas buscaPorId(Integer id) {
-	Notas nota = new Notas();
-	try {
-		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Notas WHERE id=?");
-		stmt.setLong(1, id);
-		ResultSet rs = stmt.executeQuery();
-		if(rs.next()) {
-			nota.setId(rs.getInt("id"));
-			nota.setConteudo(rs.getString("conteudo"));
-
-			//nota.setFinalizado(rs.getBoolean("finalizado"));
-			//Calendar data = Calendar.getInstance();
-			//Date dataFinalizacao = rs.getDate("dataFinalizacao");
-			//if(dataFinalizacao!=null) {
-			//	data.setTime(dataFinalizacao);
-			//	tarefa.setDataFinalizacao(data);
-			//}
+	}
+	
+	public void removePessoa(Integer id) {
+		PreparedStatement stmt;
+		try {
+			stmt = connection.prepareStatement("DELETE FROM Pessoa WHERE id=?");
+			stmt.setLong(1, id);
+			stmt.execute();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		rs.close();
-		stmt.close();
-	} 
-	catch(SQLException e) {System.out.println(e);}
-	return nota;
- }
-
-
-public void altera(Notas nota) {
-	try {
-		String sql = "UPDATE Notas SET " + " conteudo=? WHERE id=?";
-		//String sql = "UPDATE Notas SET " + "tipo=?, conteudo=?, data_atualizada=? WHERE id=?";
-		//String sql = "UPDATE Notas SET conteudo=?, finalizado=?, " + "dataFinalizacao=? WHERE id=?";
-		PreparedStatement stmt = connection.prepareStatement(sql);
-		stmt.setString(1, nota.getConteudo());
-		//stmt.setBoolean(2, nota.isFinalizado());
-		//if(tarefa.getDataFinalizacao()!=null) {
-		//	stmt.setDate(3, new Date(tarefa.getDataFinalizacao().getTimeInMillis()));
-		//} else {
-		//	stmt.setDate(3, new
-		//			Date(Calendar.getInstance().getTimeInMillis()));
-		//}
-		stmt.setInt(4, nota.getId());
-		stmt.executeUpdate();
-		stmt.close();
-	} catch(SQLException e) {System.out.println(e);}
-  	}
-
-
-public void close() {
-	try { connection.close();}
-	catch (SQLException e) {e.printStackTrace();}
-		   }
-		  }
+	}
+	
+	public int autenticaUsuario(Pessoas pessoa) {
+		PreparedStatement stmt;
+		String sql = "SELECT * FROM Pessoa WHERE login=?";
+		ResultSet rs;
+		try {
+			
+			stmt = connection.prepareStatement(sql);
+			stmt.setString(1, pessoa.getLogin());
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				if(pessoa.getSenha().equals(rs.getString("senha"))) {
+					return rs.getInt("id");
+				} else {
+					return -1;
+				}
+			}else {
+				return -1;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	return 0;
+	}
+	
+	public String horarioCriacao(Notas nota) {
+		PreparedStatement stmt;
+		String sql = "SELECT * FROM notas WHERE id=?";
+		ResultSet rs;
+		
+		try {
+			stmt = connection.prepareStatement(sql);
+			stmt.setInt(1, nota.getId());
+			rs = stmt.executeQuery();
+			if (rs.next()) {
+				return rs.getString("data");
+			}
+			else {
+				return "none";
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return "none";
+	}
+	
+	
+	public void close() {
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+}

@@ -1,6 +1,8 @@
 package mvc.controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import mvc.model.NotasDAO;
+import mvc.model.DAO;
 import mvc.model.Notas;
 
 
@@ -28,48 +30,53 @@ public class NotasController {
  
 	//pagina inicial de notas
 	@RequestMapping(value={"inicio"})
-	public String inicio(HttpSession session, Model model) throws SQLException, IOException, ParseException {
-		NotasDAO dao = new NotasDAO();
+	public String inicio(HttpSession session, Model model,
+			@RequestParam(value = "palavra_chave", required = false) String palavra_chave) throws SQLException, IOException, ParseException {
+		
+		DAO dao = new DAO();
 	 
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 		String gif_url = (String) session.getAttribute("palavra_gif");
+		String filtro = "Filtrar Notas";
 		
 		ArrayList<Notas>  notas =  (ArrayList<Notas>) dao.getListaNotas(id_usuario);
-		//List<Notas> listaNotas = dao.getListaNotas(id_usuario); 
+		if (palavra_chave != "" && palavra_chave != null) { //filtrar notas por palavra
+			
+			ArrayList<Notas> notas_filtradas = new ArrayList<Notas>();
+		
+			for (Notas nota : notas) {
+				if (nota.getConteudo().contains(palavra_chave)) { 
+					notas_filtradas.add(nota);
+				}
+			}
+			model.addAttribute("notas", notas_filtradas);
+			filtro = "Cancelar Filtro";
+			
+		} else {
+			model.addAttribute("notas", notas);
+			filtro = "Filtrar Notas";
+		}
 	 
-		model.addAttribute("notas", notas);
 		model.addAttribute("gif_url", gif_url);
+		model.addAttribute("filtro", filtro);
 		return "index";
 	}
  
- 
- /*
-	@RequestMapping("/adicionaNota")
-	public String adiciona(Notas nota) {
-		NotasDAO dao = new NotasDAO();
-		dao.adicionaNota(nota);
-		return "redirect:inicio";
-	}
-*/
 
 	@RequestMapping("adicionaNota")
 	public String adicionar(HttpSession session, 
 
 			@RequestParam(value = "conteudo") String texto_nota) throws SQLException, IOException{ //
 	
-		NotasDAO dao = new NotasDAO();
+		DAO dao = new DAO();
 		Notas nota = new Notas();
+		 
 		
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 
 		nota.setPessoa_id(id_usuario);
 	 	nota.setConteudo(texto_nota);
 	 	nota.setDateTime();
-	 	System.out.println("data");
-	 	System.out.println(nota.getDateTime());
-	 	
-	 	
-	 	
 		
 		dao.adicionaNota(nota);
 		dao.close();
@@ -80,7 +87,7 @@ public class NotasController {
 	public String remover(HttpSession session,
 			@RequestParam(value = "id") Integer id_nota) throws SQLException {
 		
-		NotasDAO dao = new NotasDAO();
+		DAO dao = new DAO();
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 		
 		dao.removeNota(id_nota, id_usuario);
@@ -94,7 +101,7 @@ public class NotasController {
 			@RequestParam(value = "id") Integer id_nota,
 			@RequestParam(value = "conteudo") String texto_nota) throws SQLException, IOException {
 		
-		NotasDAO dao = new NotasDAO();
+		DAO dao = new DAO();
 		Notas nota = new Notas();
 		Integer id_usuario = (Integer) session.getAttribute("id_usuario");
 
@@ -117,37 +124,56 @@ public class NotasController {
 	}
 	
 	@RequestMapping("paginaEditaNota")
-	public String pagina_edita(HttpSession session,
-			@RequestParam(value = "id") Integer id_nota, ModelMap model) throws SQLException{
+	public String pagina_edita(HttpSession session, ModelMap model,
+			@RequestParam(value = "id") Integer id_nota,
+			@RequestParam(value = "tipo") Integer tipo) throws SQLException, IOException{
 		
-		NotasDAO dao = new NotasDAO();
-		//Integer personId = (Integer) session.getAttribute("idLogado");
+		DAO dao = new DAO();
 		
 		String texto_nota = dao.getNota(id_nota);
 		model.addAttribute("id", id_nota);
-		//model.addAttribute("titulo", nota.getTitle());
-		model.addAttribute("conteudo", texto_nota);
 		
+		if(tipo == 1) {
+			
+			texto_nota = translate(texto_nota);
+			model.addAttribute("titulo", "Traduzir Nota");
+			
+		} else {
+			model.addAttribute("titulo", "Atualizar Nota");
+			
+		}
+		
+		model.addAttribute("conteudo", texto_nota);
 		return "atualizanotas";
 	}
+	
+	
 	
 	@RequestMapping("buscaGif") //buscar gif
 	public String gif(HttpSession session,
 			@RequestParam(value = "palavra_gif") String gif) throws Exception{
-		api(gif, session);
-		
-		
+		gif_api(gif, session);
 		return "redirect:inicio";
 	}
 	
-	public String api(String palavra, HttpSession session) throws IOException{
+	@RequestMapping("buscaPalavra") //buscar palavra
+	public String palavra(HttpSession session,
+			@RequestParam(value = "palavra_chave") String palavra_chave) throws Exception{
+		session.setAttribute("palavra_chave", palavra_chave);
+		return "redirect:inicio";
+	}
+	
+	
+	
+	
+	public String gif_api(String palavra, HttpSession session) throws IOException{
 		
-		String key = "";
+		String key = "";  //KEY 1
 		String  tag = palavra;
 		
 		String site = "https://api.giphy.com/v1/gifs/random?api_key="+key+"&tag="+tag+"&rating=R";
 		
-		site = site.replace(" ","%20");
+		site = site.replace(" ","%20");  //botar espacos no formato de url
 		
 		URL url = new URL(site);
 		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
@@ -156,31 +182,22 @@ public class NotasController {
 		
 		int resposta = conexao.getResponseCode(); 
 		String inline = "";
-		System.out.println("resposta");
-		System.out.println(resposta);
 		if(resposta != 200)
 			throw new RuntimeException("HttpResponseCode: " +resposta);
 			else
 			{
-
-				
-						
-						
+	
 				Scanner sc = new Scanner(url.openStream());
 				while(sc.hasNext())
 				{
 				inline+=sc.nextLine();
-				//System.out.println("inilin");
-				//System.out.println(inline);
 				}
 
 				sc.close();
-				System.out.println("JSON data in string format");
-				System.out.println(inline);
+
 				
 				JsonElement root = new JsonParser().parse(inline);
 				String gif = root.getAsJsonObject().get("data").getAsJsonObject().get("images").getAsJsonObject().get("fixed_height").getAsJsonObject().get("url").getAsString();
-				System.out.println(gif);
 				
 				session.setAttribute("palavra_gif", gif);
 				return gif;
@@ -188,4 +205,55 @@ public class NotasController {
 }
 	
 	
+	
+	
+	
+	public String translate(String conteudo) throws IOException{
+		
+		String key = "";  //KEY 2
+		
+		String lingua = "pt-en";  //traduzir para ingles predefinido
+		
+		String  texto = conteudo;
+		
+		String site = "https://translate.yandex.net/api/v1.5/tr.json/translate?key="+key+"&text="+texto+"&lang="+lingua+"&format=plain&options=1";
+		
+		site = site.replace(" ","%20");
+		site = site.replaceAll("ã", "%A3");//botar espacos no formato de url
+		
+		URL url = new URL(site);
+		
+		
+		HttpURLConnection conexao = (HttpURLConnection)url.openConnection();
+		conexao.setRequestMethod("GET");
+		conexao.connect();
+		
+		int resposta = conexao.getResponseCode(); 
+		String inline = "";
+		
+		if(resposta != 200)
+			throw new RuntimeException("HttpResponseCode: " +resposta);
+			else
+			{
+
+				Scanner sc = new Scanner(url.openStream(), "UTF-8");
+
+				
+				while(sc.hasNext())
+				{
+				inline+=sc.nextLine();
+				
+				}
+
+				sc.close();
+				
+				JsonElement root = new JsonParser().parse(inline);
+				
+				
+				String traducao = root.getAsJsonObject().get("text").getAsString();
+
+				return traducao;
+				
+			}
 }
+		}

@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+<%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
@@ -9,7 +9,7 @@
 
 <head>
 
-
+<meta charset="UTF-8">
 
 
 <%@ page import="java.util.*,mvc.model.*" %>
@@ -18,39 +18,46 @@
 
 
 <%List<Notas> listaNotas = (ArrayList<Notas>) request.getAttribute("notas");
-String gif_url = (String) request.getAttribute("gif_url");%>
-
+String gif_url = (String) request.getAttribute("gif_url");
+String filtro = (String) request.getAttribute("filtro");%>
+<title>Início</title>
 </head>
 <body>
 
-<%-- 
 <div class= "button-flex">
 <div class="form">
-	<form class="login-form" action = "FiltraNotas">
-		<input type = "text" name="palavra_filtrada">
-		<input type = "hidden" value =<%= id_usuario %> name = "pessoa_id">
-		<input id="home" class="button" type = "submit" value="Filtrar notas">
-	</form></div></div>  --%>
+	<form class="login-form" action = "inicio">
+		<input type = "text" name="palavra_chave">
+		<input id="home" class="button" type = "submit" value="<%=filtro%>">
+	</form></div></div>
 	
 <div class="flex-container">
-<% for (Notas nota : listaNotas) { 
-System.out.println(nota.getPessoa_id());
-System.out.println("nota");%>
+<% for (Notas nota : listaNotas) { %>
   <div class="grid-item">
   	<p id="texto_nota"><%=nota.getConteudo()%></p>
   	<h6 id="data"> Criado em <%=nota.getDateTime()%></h6>
   	<div class="button-flex">
+  	
   	<div>
 	<form action = "removeNota" method = "post">
 		<input type='hidden' name='id' value="<%= nota.getId()%>">
 		<input id="apagar" class="button" type ="submit" value = "Apagar">
 	</form></div>
+	
 	<div>
 	<form action = "paginaEditaNota">
 		<input type='hidden' name='id' value="<%= nota.getId()%>">
-		<input type='hidden' name='conteudo' value="<%= nota.getConteudo()%>">
+		<input type='hidden' name='tipo' value=0>
 		<input id="editar" class="button" type = "submit" value = "Editar">
 	</form></div>
+	
+	<div>
+	<form action = "paginaEditaNota">
+		<input type='hidden' name='id' value="<%= nota.getId()%>">
+		<input type='hidden' name='tipo' value=1>
+		<input id="editar" class="button" type = "submit" value = "Traduzir">
+	</form></div>
+	
 	</div>
   </div>
 <% } %>
@@ -84,7 +91,10 @@ System.out.println("nota");%>
 		<input type = "text" name="palavra_gif">
 		<input id="home" class="button" type = "submit" value="Buscar Giphy">
 	</form></div></div>
-	<img src="<%=gif_url%>" class="center" style="float:center;"/>
+	<object class="center" data="<%=gif_url%>" type="image/gif"></object>
+	
+	
+
 	
 	
 	
